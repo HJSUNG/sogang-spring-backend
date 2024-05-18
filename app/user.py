@@ -5,7 +5,6 @@ from flask import Blueprint, jsonify
 
 user_blueprint = Blueprint('user', __name__, url_prefix='/user')
 
-
 load_dotenv()
 
 db_config = {
@@ -20,7 +19,7 @@ db_config = {
 def user_test():
     try:
         connection = pymysql.connect(**db_config)
-        cursor = connection.cursor()
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
 
         cursor.execute("SELECT * FROM TB_COM_USER")
         result = cursor.fetchall()
