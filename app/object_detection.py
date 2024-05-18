@@ -5,7 +5,7 @@ from io import BytesIO
 from datetime import datetime
 import random # 테스트용 점수 생성
 
-objectDetection_blueprint = Blueprint('objectDetection', __name__, url_prefix='/objectDetection')
+objectDetection_blueprint = Blueprint('objectDetection', __name__, url_prefix='/api/objectDetection')
 
 @objectDetection_blueprint.route('/sendImage', methods=['POST'])
 def sendImage():

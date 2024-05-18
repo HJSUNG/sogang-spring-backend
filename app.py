@@ -11,5 +11,9 @@ cors = CORS(app, resources={r'/*': {'origins': '*'}})
 app.register_blueprint(user_blueprint)
 app.register_blueprint(objectDetection_blueprint)
 
+@app.route('/api', methods=['GET'])
+def get_root():
+    return 'Hello, World!', 200
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)

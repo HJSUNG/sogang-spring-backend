@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import pymysql
 from flask import Blueprint, jsonify
 
-user_blueprint = Blueprint('user', __name__, url_prefix='/user')
+user_blueprint = Blueprint('user', __name__, url_prefix='/api/user')
 
 load_dotenv()
 
