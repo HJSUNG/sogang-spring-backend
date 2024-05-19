@@ -4,12 +4,14 @@ from PIL import Image
 from io import BytesIO
 from datetime import datetime
 import random # 테스트용 점수 생성
+import pytz
 
 objectDetection_blueprint = Blueprint('objectDetection', __name__, url_prefix='/api/objectDetection')
 
 @objectDetection_blueprint.route('/sendImage', methods=['POST'])
 def sendImage():
-    now = datetime.now()
+    kst = pytz.timezone('Asia/Seoul')
+    now = datetime.now(kst)
 
     data = request.get_json()
 
@@ -22,7 +24,11 @@ def sendImage():
 
     image_pil = Image.open(BytesIO(image_data))
 
-    # image_pil.show()
+    image_pil.show()
+
+    # 학습된 Yolo Model들을 통한 자세 판정
+
+    # 판정 결과 정보를 DB에 저장
 
     return jsonify({
         'success': True,
