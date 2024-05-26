@@ -16,7 +16,7 @@ def sendImage():
     data = request.get_json()
 
     image_data_str = data['image']
-    print(image_data_str)
+    # print(image_data_str)
 
     # base64 디코딩하여 이미지로 변환
     _, encoded = image_data_str.split(',', 1)
@@ -24,7 +24,7 @@ def sendImage():
 
     image_pil = Image.open(BytesIO(image_data))
 
-    image_pil.show()
+    # image_pil.show()
 
     # 학습된 Yolo Model들을 통한 자세 판정
 
