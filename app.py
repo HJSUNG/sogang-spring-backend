@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager
 
 from app.user import user_blueprint
 from app.object_detection import objectDetection_blueprint
+from app.object_detection_report import objectDetectionReport_blueprint
 
 app = Flask(__name__)
 cors = CORS(app, resources={r'/*': {'origins': '*'}})
@@ -17,6 +18,7 @@ jwt = JWTManager(app)
 
 app.register_blueprint(user_blueprint)
 app.register_blueprint(objectDetection_blueprint)
+app.register_blueprint(objectDetectionReport_blueprint)
 
 @app.route('/api', methods=['GET'])
 def get_root():
