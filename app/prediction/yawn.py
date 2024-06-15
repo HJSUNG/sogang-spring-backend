@@ -3,12 +3,12 @@ import numpy as np
 from PIL import Image, ImageOps
 
 # Load the model
-model = load_model('models/blink_and_yawn/keras_model.h5', compile=False)
+model = load_model('models/yawn/keras_model.h5', compile=False)
 
 # Load the labels
-class_names = open('models/blink_and_yawn/labels.txt', "r").readlines()
+class_names = open('models/yawn/labels.txt', "r").readlines()
 
-def predict_blink_and_yawn(image_pil):
+def predict_yawn(image_pil):
     data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
     image_pil = image_pil.convert('RGB')
@@ -33,7 +33,6 @@ def predict_blink_and_yawn(image_pil):
     print("Class:", class_name[2:], end="")
     print("Confidence Score:", confidence_score)
 
-    return {"predictions": prediction, "predicted_label": class_name}
-# 0 눈비비기
-# 1 하품
-# 2 평상시
+    return {"predictions": prediction, "predicted_label": class_name[2:]}
+
+

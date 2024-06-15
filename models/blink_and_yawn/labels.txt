@@ -1,3 +1,3 @@
-0 눈비비기
-1 정상
-2 하품
+0 eye-rubbing
+1 normal
+2 yawn

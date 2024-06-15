@@ -17,7 +17,37 @@ def get_detection_no_list():
         connection = pymysql.connect(**db_config)
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        cursor.execute("""SELECT uid, USER_ID, DATE_FORMAT(START_DTTM, '%%Y-%%m-%%d %%H:%%i:%%s') as START_DTTM,DATE_FORMAT(END_DTTM, '%%Y-%%m-%%d %%H:%%i:%%s') as END_DTTM FROM TB_DETECTION_MASTER WHERE USER_ID = %s""", (current_user['USER_ID']))
+        cursor.execute("""SELECT uid, USER_ID, DATE_FORMAT(START_DTTM, '%%Y-%%m-%%d %%H:%%i:%%s') as START_DTTM,DATE_FORMAT(END_DTTM, '%%Y-%%m-%%d %%H:%%i:%%s') as END_DTTM, TEST_TP FROM TB_DETECTION_MASTER WHERE USER_ID = %s""", (current_user['USER_ID']))
+        result = cursor.fetchall()
+
+        cursor.close()
+
+        return jsonify({
+            "stacd": 100,
+            "detection_no_list": result,
+        }), 200
+    except Exception as e:
+        return jsonify({'error': e})
+
+    finally:
+        connection.close()
+
+@objectDetectionReport_blueprint.route('getDetectionNoDetailList', methods=['POST'])
+@jwt_required()
+def get_detection_no_detail_list():
+    db_config = current_app.config['DB_CONFIG']
+
+    current_user = get_jwt_identity()
+
+    data = request.get_json()
+
+    detection_no = data['detection_no']
+
+    try:
+        connection = pymysql.connect(**db_config)
+        cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+        cursor.execute("""SELECT uid, USER_ID, DATE_FORMAT(START_DTTM, '%%Y-%%m-%%d %%H:%%i:%%s') as START_DTTM,DATE_FORMAT(END_DTTM, '%%Y-%%m-%%d %%H:%%i:%%s') as END_DTTM, TEST_TP FROM TB_DETECTION_MASTER WHERE USER_ID = %s""", (current_user['USER_ID']))
         result = cursor.fetchall()
 
         cursor.close()

@@ -1,29 +1,36 @@
 from tensorflow.keras.models import load_model
 import numpy as np
+from PIL import Image, ImageOps
 
-# 모델 및 레이블 파일 로드
-model = load_model('models/facial_emotion/keras_model.h5')
-with open('models/facial_emotion/labels.txt', 'r') as f:
-    labels = f.read().splitlines()
+# Load the model
+model = load_model('models/facial_emotion/keras_model.h5', compile=False)
+
+# Load the labels
+class_names = open('models/facial_emotion/labels.txt', "r").readlines()
 
 def predict_facial_emotion(image_pil):
-    # 이미지를 RGB로 변환
+    data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
+
     image_pil = image_pil.convert('RGB')
 
-    # 이미지를 모델이 예상하는 크기로 조정 (예시: 224x224)
-    image_pil = image_pil.resize((224, 224))
+    size = (224, 224)
+    image = ImageOps.fit(image_pil, size, Image.Resampling.LANCZOS)
 
-    # 이미지를 numpy 배열로 변환
-    img_array = np.array(image_pil)
+    image_array = np.asarray(image)
 
-    # 모델로 예측
-    predictions = model.predict(np.array([img_array]))
+    normalized_image_array = (image_array.astype(np.float32) / 127.5) - 1
 
-    # 예측 결과 해석
-    predicted_label = labels[np.argmax(predictions)]
+    # Load the image into the array
+    data[0] = normalized_image_array
 
-    return {"predictions": predictions, "predicted_label": predicted_label}
+    # Predicts the model
+    prediction = model.predict(data)
+    index = np.argmax(prediction)
+    class_name = class_names[index]
+    confidence_score = prediction[0][index]
 
+    # Print prediction and confidence score
+    print("Class:", class_name[2:], end="")
+    print("Confidence Score:", confidence_score)
 
-# 0 happy
-# 1 sad
+    return {"predictions": prediction, "predicted_label": class_name[2:]}
