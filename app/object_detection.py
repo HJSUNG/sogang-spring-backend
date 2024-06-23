@@ -7,15 +7,18 @@ import pytz
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 import pymysql
 
-from app.prediction.blink_and_yawn import predict_blink_and_yawn
 from app.prediction.sleeping import predict_sleeping
 from app.prediction.facial_emotion import predict_facial_emotion
 from app.prediction.yawn import predict_yawn
-from app.prediction.neck_and_waist import predict_neck_and_waist
+from app.prediction.pose import predict_pose
 from app.prediction.eye_rubbing import predict_eye_rubbing
+
+from app.demo.demo import demo_yawn, demo_eye_rubbing, demo_sleeping, demo_pose, demo_facial_emotion
 
 
 objectDetection_blueprint = Blueprint('objectDetection', __name__, url_prefix='/api/objectDetection')
+
+scenario_case = 'positive'
 
 @objectDetection_blueprint.route('/startDetection', methods=['POST'])
 @jwt_required()
@@ -36,12 +39,12 @@ def start_detection():
         connection = pymysql.connect(**db_config)
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        cursor.execute("SELECT MAX(uid) as max_pk FROM TB_DETECTION_MASTER")
+        cursor.execute("SELECT MAX(DETECTION_NO) as max_pk FROM TB_DETECTION_MASTER")
         result = cursor.fetchall()
 
         detection_no = result[0]["max_pk"] + 1
 
-        cursor.execute("INSERT INTO TB_DETECTION_MASTER(uid, USER_ID, START_DTTM, END_DTTM, TEST_TP) VALUES (%s,%s, %s, null, %s)", (detection_no, current_user["USER_ID"], now.strftime("%Y-%m-%d %H:%M:%S"), data['test_type']))
+        cursor.execute("INSERT INTO TB_DETECTION_MASTER(DETECTION_NO, USER_ID, START_DTTM, END_DTTM, TEST_TP) VALUES (%s,%s, %s, null, %s)", (detection_no, current_user["USER_ID"], now.strftime("%Y-%m-%d %H:%M:%S"), data['test_type']))
 
         connection.commit()
         cursor.close()
@@ -71,7 +74,7 @@ def end_detection():
         connection = pymysql.connect(**db_config)
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        cursor.execute("UPDATE TB_DETECTION_MASTER SET END_DTTM = %s WHERE uid = %s", (now.strftime("%Y-%m-%d %H:%M:%S"), detection_no))
+        cursor.execute("UPDATE TB_DETECTION_MASTER SET END_DTTM = %s WHERE DETECTION_NO = %s", (now.strftime("%Y-%m-%d %H:%M:%S"), detection_no))
 
         connection.commit()
         cursor.close()
@@ -111,8 +114,12 @@ def detectNormal():
     image_pil = Image.open(BytesIO(image_data))
 
     prediction_yawn = predict_yawn(image_pil)
-    prediction_eye_rubbing = predict_eye_rubbing(image_pil);
+    prediction_eye_rubbing = predict_eye_rubbing(image_pil)
     prediction_facial_emotion = predict_facial_emotion(image_pil)
+
+    # prediction_yawn = demo_yawn(detection_detail_no, scenario_case)
+    # prediction_eye_rubbing = demo_eye_rubbing(detection_detail_no, scenario_case)
+    # prediction_facial_emotion = demo_facial_emotion(detection_detail_no, scenario_case)
 
     print(prediction_yawn['predicted_label'])
     print(prediction_eye_rubbing['predicted_label'])
@@ -125,9 +132,9 @@ def detectNormal():
         connection = pymysql.connect(**db_config)
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "yawn", prediction_yawn['predicted_label'], now.strftime("%Y-%m-%d %H:%M:%S")))
-        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "eye_rubbing", prediction_eye_rubbing['predicted_label'], now.strftime("%Y-%m-%d %H:%M:%S")))
-        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "facial_emotion", prediction_facial_emotion['predicted_label'], now.strftime("%Y-%m-%d %H:%M:%S")))
+        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "yawn", prediction_yawn['predicted_label'].replace('\n', ''), now.strftime("%Y-%m-%d %H:%M:%S")))
+        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "eye_rubbing", prediction_eye_rubbing['predicted_label'].replace('\n', ''), now.strftime("%Y-%m-%d %H:%M:%S")))
+        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "facial_emotion", prediction_facial_emotion['predicted_label'].replace('\n', ''), now.strftime("%Y-%m-%d %H:%M:%S")))
 
         connection.commit()
         cursor.close()
@@ -172,6 +179,8 @@ def detectSleeping():
 
     prediction_sleeping = predict_sleeping(image_pil)
 
+    # prediction_sleeping = demo_sleeping(detection_detail_no, scenario_case)
+
     print(prediction_sleeping['predicted_label'])
 
     # 판정 결과 정보를 DB에 저장
@@ -180,7 +189,7 @@ def detectSleeping():
         connection = pymysql.connect(**db_config)
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "sleeping", prediction_sleeping['predicted_label'], now.strftime("%Y-%m-%d %H:%M:%S")))
+        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "sleeping", prediction_sleeping['predicted_label'].replace('\n', ''), now.strftime("%Y-%m-%d %H:%M:%S")))
 
         connection.commit()
         cursor.close()
@@ -221,9 +230,11 @@ def detectPose():
 
     image_pil = Image.open(BytesIO(image_data))
 
-    prediction_neck_and_waist = predict_neck_and_waist(image_pil)
+    prediction_pose = predict_pose(image_pil)
 
-    print(prediction_neck_and_waist['predicted_label'])
+    # prediction_pose = demo_pose(detection_detail_no, scenario_case)
+
+    print(prediction_pose['predicted_label'])
 
     # 판정 결과 정보를 DB에 저장
 
@@ -231,7 +242,7 @@ def detectPose():
         connection = pymysql.connect(**db_config)
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "neck_and_waist", prediction_neck_and_waist['predicted_label'], now.strftime("%Y-%m-%d %H:%M:%S")))
+        cursor.execute("INSERT INTO TB_DETECTION_DETAIL VALUES (%s,%s,%s,%s,%s)", (detection_no, detection_detail_no, "pose", prediction_pose['predicted_label'].replace('\n', ''), now.strftime("%Y-%m-%d %H:%M:%S")))
 
         connection.commit()
         cursor.close()
@@ -246,7 +257,7 @@ def detectPose():
         'success': True,
         'judge_result': {
             'judge_dttm': now.strftime("%Y-%m-%d %H:%M:%S"),
-            "neck_and_waist": prediction_neck_and_waist['predicted_label'],
+            "pose": prediction_pose['predicted_label'],
         },
         'message': 'Image received and processed successfully'
     }), 200

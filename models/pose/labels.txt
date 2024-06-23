@@ -1,0 +1,5 @@
+0 normal
+1 lean-left
+2 lean-right
+3 lean-forward
+4 lean-backward

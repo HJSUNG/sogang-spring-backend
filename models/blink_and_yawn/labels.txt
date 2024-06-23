@@ -1,3 +1,0 @@
-0 eye-rubbing
-1 normal
-2 yawn
