@@ -13,3 +13,4 @@ class Config:
         'database': os.getenv('MYSQL_DB'),
         'charset': 'utf8mb4'
     }
+    CHAT_GPT_API_KEY = os.getenv('CHAT_GPT_API_KEY')

@@ -14,7 +14,7 @@ def user_login():
         connection = pymysql.connect(**db_config)
         cursor = connection.cursor(pymysql.cursors.DictCursor)
 
-        cursor.execute("SELECT USER_ID, USER_NM, USER_TP FROM TB_COM_USER WHERE USER_ID = %s AND USER_PW = %s", (data['USER_ID'], data['USER_PW']))
+        cursor.execute("SELECT USER_ID, USER_NM, USER_TP, DATE_FORMAT(USER_BIRTH_DT, '%%Y-%%m-%%d') AS USER_BIRTH_DT, USER_GENDER, USER_ADDR, USER_EMAIL_ADDR FROM TB_COM_USER WHERE USER_ID = %s AND USER_PW = %s", (data['USER_ID'], data['USER_PW']))
 
         result = cursor.fetchall()
 
